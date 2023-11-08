@@ -6,7 +6,7 @@ DEBUG_MODE = True  # 필요한 경우 True로 설정, 필요하지 않은 경우
 
 
 # 이미지를 불러오세요.
-image_path = 'img.png'  # 이미지 파일 경로를 지정하세요.
+image_path = 'img_3.png'  # 이미지 파일 경로를 지정하세요.
 image = cv2.imread(image_path)
 
 # 이미지를 그레이스케일로 변환하세요.
