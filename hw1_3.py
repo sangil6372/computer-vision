@@ -1,8 +1,15 @@
 import cv2
+import sys
 import numpy as np
 
 # 이미지를 불러옴
-image_path = 'board2.png'  # 이미지 파일 경로를 지정
+# 명령형 인자로부터 이미지 경로를 받습니다.
+if len(sys.argv) > 1:
+    image_path = sys.argv[1]  # 첫 번째 인자가 이미지 경로입니다.
+else:
+    print("Usage: python script.py <image_path>")
+    sys.exit(1)
+
 image = cv2.imread(image_path)
 # 이미지를 그레이스케일로 변환
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -44,11 +51,12 @@ top_right = np.array([image.shape[1], 0])
 bottom_left = np.array([0, image.shape[0]])
 bottom_right = np.array([image.shape[1], image.shape[0]])
 
+corners = np.array(corners)
 
 # 각 모서리에 가장 가까운 교차점 찾기
-def find_closest_corner(corner, corners):
-    distances = np.linalg.norm(corners - corner, axis=1)
-    return corners[np.argmin(distances)]
+def find_closest_corner(corner, all_corners):
+    distances = np.linalg.norm(all_corners - corner, axis=1)
+    return all_corners[np.argmin(distances)]
 
 
 closest_top_left = find_closest_corner(top_left, corners)

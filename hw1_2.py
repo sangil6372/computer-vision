@@ -1,5 +1,6 @@
 import cv2  # OpenCV 라이브러리 추가
 import numpy as np  # 배열 연산을 위해 numpy 라이브러리를 추가
+import sys
 
 
 # 교재의 코드8-7 영상의 투시 변환 예제[ch08/perpective] 코드를 참고하였습니다.
@@ -22,8 +23,16 @@ def on_mouse(event, x, y, _, __):
                 cv2.imshow('dst', dst)
 
 
+# 이미지를 불러옴
+# 명령형 인자로부터 이미지 경로를 받습니다.
+if len(sys.argv) > 1:
+    image_path = sys.argv[1]  # 첫 번째 인자가 이미지 경로입니다.
+else:
+    print("Usage: python script.py <image_path>")
+    sys.exit(1)
+
 # 이미지와 변수 초기화
-src = cv2.imread('board2.png')
+src = cv2.imread(image_path)
 srcQuad = []  # srcQuad를 리스트로 초기화
 w, h = 300, 300  # 결과 이미지의 너비와 높이를 정사각형으로 설정
 

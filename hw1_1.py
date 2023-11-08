@@ -1,11 +1,14 @@
 import cv2
 import numpy as np
-
-# 디버그 모드 플래그
-DEBUG_MODE = True  # 필요한 경우 True로 설정, 필요하지 않은 경우 False로 설정
+import sys
 
 # 이미지를 불러옴
-image_path = 'board1.png'  # 이미지 파일 경로를 지정
+# 명령형 인자로부터 이미지 경로를 받습니다.
+if len(sys.argv) > 1:
+    image_path = sys.argv[1]  # 첫 번째 인자가 이미지 경로입니다.
+else:
+    print("Usage: python script.py <image_path>")
+    sys.exit(1)
 image = cv2.imread(image_path)
 # 이미지를 그레이스케일로 변환
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)

@@ -1,8 +1,15 @@
 import cv2
 import numpy as np
+import sys
 
 # 이미지를 불러옴
-image_path = 'board2.png'  # 이미지 파일 경로를 지정
+# 명령형 인자로부터 이미지 경로를 받습니다.
+if len(sys.argv) > 1:
+    image_path = sys.argv[1]  # 첫 번째 인자가 이미지 경로입니다.
+else:
+    print("Usage: python script.py <image_path>")
+    sys.exit(1)
+
 image = cv2.imread(image_path)
 # 이미지를 그레이스케일로 변환
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -44,11 +51,12 @@ top_right = np.array([image.shape[1], 0])
 bottom_left = np.array([0, image.shape[0]])
 bottom_right = np.array([image.shape[1], image.shape[0]])
 
+corners = np.array(corners)
 
 # 각 모서리에 가장 가까운 교차점 찾기
-def find_closest_corner(corner, corners):
-    distances = np.linalg.norm(corners - corner, axis=1)
-    return corners[np.argmin(distances)]
+def find_closest_corner(corner, all_corners):
+    distances = np.linalg.norm(all_corners - corner, axis=1)
+    return all_corners[np.argmin(distances)]
 
 
 closest_top_left = find_closest_corner(top_left, corners)
@@ -60,39 +68,20 @@ closest_bottom_right = find_closest_corner(bottom_right, corners)
 extreme_corners = [
     closest_top_left,
     closest_top_right,
-    closest_bottom_left,
-    closest_bottom_right
+    closest_bottom_right,
+    closest_bottom_left
 ]
 
-
-def order_points(pts):
-    # 네 점을 정렬하는 함수 (상단 왼쪽, 상단 오른쪽, 하단 오른쪽, 하단 왼쪽 순서)
-    rect = np.zeros((4, 2), dtype="float32")
-
-    s = pts.sum(axis=1)
-    rect[0] = pts[np.argmin(s)]
-    rect[2] = pts[np.argmax(s)]
-
-    diff = np.diff(pts, axis=1)
-    rect[1] = pts[np.argmin(diff)]
-    rect[3] = pts[np.argmax(diff)]
-
-    return rect
-
-
-ordered_corners = order_points(np.array(extreme_corners))
-
-w = 300
-h = 300
-dstQuad = np.array([[0, 0], [w - 1, 0], [w - 1, h - 1], [0, h - 1]], dtype=np.float32)
-srcQuad_np = np.array(extreme_corners, dtype=np.float32)  # srcQuad를 NumPy 배열로 변환
-pers = cv2.getPerspectiveTransform(ordered_corners, dstQuad)  # 투영 변환 행렬 계산
-dst = cv2.warpPerspective(image, pers, (w, h))  # 투영 변환 행렬 적용
+width = 300
+height = 300
+dstQuad = np.array([[0, 0], [width - 1, 0], [width - 1, height - 1], [0, height - 1]], dtype=np.float32)
+pers = cv2.getPerspectiveTransform(np.array(extreme_corners, dtype=np.float32), dstQuad)  # 투영 변환 행렬 계산
+dst = cv2.warpPerspective(image, pers, (width, height))  # 투영 변환 행렬 적용
 
 # Canny 엣지 검출을 수행하세요.
 edges = cv2.Canny(dst, 0, 254)
 
-# 허프 변환을 사용하여 원 검출
+# 허프 변환을 사용하여 엣지에서 원 검출
 circles = cv2.HoughCircles(
     edges,
     cv2.HOUGH_GRADIENT,  # Hough 변환 방법
@@ -107,11 +96,8 @@ circles = cv2.HoughCircles(
 # 밝은 원과 어두운 원의 개수를 저장할 변수 초기화
 w = 0
 b = 0
-# 임계값 설정 150
+# 임계값 설정 1
 threshold = 150
-
-# 원들의 색상값을 저장할 리스트
-circle_brightness = []
 
 # 검출된 원이 있는 경우
 if circles is not None:
